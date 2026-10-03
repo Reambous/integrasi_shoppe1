@@ -1,10 +1,14 @@
 <?php
 
 use App\Http\Controllers\ShopeeAuthController;
+use App\Http\Controllers\ShopeeWebhookController;
 use Illuminate\Support\Facades\Route;
 
 // Throttle ringan agar menghormati rate limit Shopee & anti-spam callback.
 Route::middleware('throttle:30,1')->prefix('shopee')->group(function () {
     Route::get('/auth/redirect', [ShopeeAuthController::class, 'redirect']);
     Route::get('/callback', [ShopeeAuthController::class, 'callback']);
+    // Webhook diberi limit sendiri yang lebih longgar (push bisa burst).
+    Route::post('/webhook', [ShopeeWebhookController::class, 'handle'])
+        ->middleware('throttle:120,1');
 });
