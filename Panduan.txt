@@ -1,0 +1,26 @@
+# Project Context & Constraints: Shopee API Integration on cPanel
+
+## Tech Stack
+- Framework: Laravel (Latest)
+- Database: MySQL
+- Environment: Starting in Shopee Open Platform Sandbox mode.
+
+## Critical Deployment Constraints (Shared cPanel, No SSH)
+1. **NO Daemon Workers:** Do NOT use `php artisan queue:work` or Supervisor. Any asynchronous background task must be designed to run via Laravel Task Scheduling (Cron Job) executing every few minutes.
+2. **Webhook Handling:** Webhooks from Shopee must be processed synchronously to return HTTP 200 immediately. Save the raw JSON payload into a `webhook_logs` database table. A scheduled console command will process this table later.
+3. **Database Migrations:** Cannot run `php artisan migrate` on production. Migrations must be clean so they can be exported as raw SQL from localhost and imported via phpMyAdmin.
+4. **File System:** Avoid dynamic symlinks in production. Use standard public directories.
+
+## Security & Error Handling (STRICT)
+1. **Credential Protection:** Store `access_token` and `refresh_token` securely. 
+2. **Webhook Verification:** The Webhook controller MUST verify the HMAC-SHA256 signature sent by Shopee before saving the payload to the database. Reject invalid signatures with HTTP 403.
+3. **Logging:** Wrap all Shopee API calls in try-catch blocks. Log all API errors and response bodies to Laravel's daily logs for easier debugging on cPanel.
+4. **Rate Limiting:** Ensure API calls respect Shopee's rate limits to avoid temporary IP bans.
+
+## Core Modules to Build Step-by-Step
+Wait for my specific prompt for each step. Do not build everything at once.
+1. **Database Schema:** Create migrations for `shopee_tokens` (shop_id, access_token, refresh_token, expiries) and `webhook_logs` (id, event_type, payload, status).
+2. **Security Service:** Create `ShopeeSignatureService` to generate HMAC-SHA256 signatures (PartnerID + Path + Timestamp + AccessToken + ShopID).
+3. **Auth Controller:** Endpoints for redirecting to Shopee Authorization and a callback to exchange the `authorization_code` for an `access_token`.
+4. **Webhook Controller:** Endpoint to receive Push Data, validate the signature, save to `webhook_logs`, and return 200 OK.
+5. **Scheduled Tasks:** Console commands to auto-refresh expiring tokens and process pending `webhook_logs`.

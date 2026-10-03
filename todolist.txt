@@ -1,0 +1,16 @@
+Langkah-Langkah Eksekusi (To-Do List)
+Siapkan Environment Lokal: Nyalakan Laragon, buat proyek Laravel baru, dan buat database lokal (misal: shopee_integration). Buka proyek ini di code editor pilihanmu.
+
+Berikan Konteks ke AI: Berikan teks rules_shopee_cpanel.md di atas ke AI Agent. Setelah AI memahaminya, minta AI membuatkan file tahap pertama: "Buatkan migration untuk shopee_tokens dan webhook_logs sesuai aturan tadi."
+
+Eksekusi & Uji Coba Lapis Pertama: Jalankan php artisan migrate di terminal Laragon. Biarkan AI memandu pembuatan ShopeeSignatureService dan AuthController.
+
+Buka Terowongan (Tunneling): Jalankan server lokalmu (php artisan serve atau domain .test dari Laragon), lalu jalankan perintah Ngrok di terminal (misal: ngrok http 8000). Kamu akan mendapat URL publik (contoh: [https://abc.ngrok.app](https://abc.ngrok.app)).
+
+Konfigurasi Sandbox Shopee: Masuk ke Shopee Open Platform (Sandbox Mode). Masukkan URL Ngrok tersebut ke kolom Redirect URL (untuk Auth) dan Webhook URL.
+
+Simulasi Transaksi: Gunakan Test Account di Shopee Sandbox untuk melakukan login otorisasi ke aplikasi lokalmu. Coba buat pesanan palsu di toko Sandbox tersebut, dan lihat apakah webhook berhasil masuk ke tabel webhook_logs di database lokalmu.
+
+Persiapan Deployment: Setelah semua kode berjalan sempurna di lokal, matikan Ngrok. Jalankan perintah build (jika ada aset frontend). Ekspor database lokalmu menjadi file .sql.
+
+Deploy ke cPanel: ZIP seluruh folder Laravel lokalmu. Unggah dan ekstrak via File Manager cPanel (sesuaikan folder public dengan public_html). Buka phpMyAdmin di cPanel dan import file .sql tadi. Terakhir, setup Cron Job di cPanel untuk menjalankan scheduler Laravel setiap 5 menit.
